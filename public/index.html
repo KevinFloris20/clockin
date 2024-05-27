@@ -5,11 +5,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Clock-In App</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
-        <link rel="stylesheet" href="/styles.css">
+        <link rel="stylesheet" href="/style.css">
     </head>
     <body>
     <div class="ui container">
-        <div class="ui middle aligned center aligned grid" style="height: 100vh;">
+        <div class="ui middle aligned center aligned grid" style="height: 80vh;">
             <div class="column" style="max-width: 450px;">
                 <h2 class="ui teal image header">
                 <div class="content">
@@ -23,6 +23,10 @@
                 </form>
             </div>
         </div>
+    </div>
+    <!-- ui container for error messages -->
+    <div class="ui container">
+        <div id="UImessage" class="ui message hidden"></div>
     </div>
     <script src="/script.js"></script>
     </body>
