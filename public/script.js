@@ -9,7 +9,7 @@ async function clockIn() {
         clearErrorUI(msgBox);
         clearMessageUI(msgBox);
 
-        const response = await fetch('/clockin', {
+        const response = await fetch('/api/clockin', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -17,14 +17,14 @@ async function clockIn() {
             body: JSON.stringify({ clockTime: clockInTime }),
         });
 
-        const data = await response.json();
-        console.log(response);
-        console.log(data);
+        const res = await response.json();
+
+        let date = toMMDDYYYY(convertUTCToLocalTime(res.data));
 
         if (response.ok) {
-            addMessageUI(msgBox, data.message);
+            addMessageUI(msgBox, res.message + ":  " + date);
         } else {
-            errorUI(msgBox, data.message);
+            errorUI(msgBox, date);
         }
 
         loadedUI(button);

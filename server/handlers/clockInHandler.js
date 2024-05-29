@@ -4,14 +4,14 @@ exports.handleClockIn = (req, res) => {
 
     console.log('clockTime:', clockTime);
 
-    let { isvalid, msg } = validateUTCTimestamp(clockTime);
+    let { isValid, message } = validateUTCTimestamp(clockTime);
 
-    console.log('isvalid:', isvalid);
-    console.log('msg:', msg);
+    console.log('isvalid:', isValid);
+    console.log('msg:', message);
     
-    if (!isvalid) {
-        return res.status(400).json({ message: msg });
+    if (!isValid) {
+        return res.status(400).json({ message: message });
     }
 
-    res.json({ message: `Clock time logged: ${clockTime}` });
+    res.json({ data: clockTime, message: `Clocked In` });
 };
