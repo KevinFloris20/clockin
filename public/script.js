@@ -1,3 +1,4 @@
+
 //Async functions to interact with the server
 async function clockIn() {
     try {
@@ -34,6 +35,16 @@ async function clockIn() {
 
         errorUI(msgBox, err.message);
         loadedUI(button);
+    }
+}
+async function getClockTimes() {
+    try {
+        const response = await fetch('/api/times');
+        const res = await response.json();
+        console.log(res); 
+        return res.data.fields
+    } catch (err) {
+        console.error(err);
     }
 }
 
@@ -112,6 +123,21 @@ function clearMessageUI(el){
     el.classList.remove('green');
     el.innerText = '';
 }
+function populateClockTimeTable(times){
+    const tbody = document.getElementById('clockInTimes');
+    times.forEach((time, index) => {
+        const tr = document.createElement('tr');
+        const countTd = document.createElement('td');
+        const timeTd = document.createElement('td');
+        
+        countTd.textContent = index + 1;
+        timeTd.textContent = time;
+
+        tr.appendChild(countTd);
+        tr.appendChild(timeTd);
+        tbody.appendChild(tr);
+    });
+}
 
 //set everything in dom
 document.addEventListener('DOMContentLoaded', () => {
@@ -119,5 +145,17 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         clockIn();
     });
+
+    //get times and print to console
+    const userRes = getClockTimes();
+    userRes.then(data => {
+        const times = Object.values(data.time.mapValue.fields).map(time => {
+            return convertUTCToLocalTime(time.timestampValue);
+        });
+        populateClockTimeTable(times);
+    });
+    
+
+
 
 });
