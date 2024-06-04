@@ -109,9 +109,12 @@ async function getTime(userId, headers) {
     }
 }
 
+
+
 async function setTime(userId, clockTime, headers) {
     try {
         const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbName}/documents/${collectionId}/${userId}`;
+        console.log('Fetching document from URL:', url); 
         const docResponse = await axios.get(url, { headers });
         const doc = docResponse.data;
         let currentTimes = {};
@@ -121,36 +124,40 @@ async function setTime(userId, clockTime, headers) {
         }
 
         const nextKey = (Object.keys(currentTimes).length + 1).toString();
+        console.log('Next key in sequence:', nextKey); 
 
-        const updateUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbName}/documents/${collectionId}/${userId}`;
-        const data = {
-            fields: {
-                time: {
-                    mapValue: {
-                        fields: {
-                            [nextKey]: { timestampValue: clockTime }
-                        }
+        clockTime = formatFirestoreValue(new Date(clockTime))
+        console.log("Clock " , clockTime)
+
+        console.log("Other: ", projectId, dbName, collectionId, userId)
+        const formattedData = {
+            time: {
+                mapValue: {
+                    fields: {
+                        [nextKey]: clockTime
                     }
                 }
             }
         };
+        console.log(formattedData)
+        const fieldPaths = Object.keys(formattedData).join('&updateMask.fieldPaths=');
+        const updateUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbName}/documents/${collectionId}/${userId}?updateMask.fieldPaths=${fieldPaths}`;
+        const updatePayload = {
+            fields: formattedData
+        };
+        const updateResponse = await axios.patch(updateUrl, updatePayload, { headers });
 
-        const response = await axios.patch(updateUrl, data, {
-            headers: {
-                Authorization: `Bearer ${headers.Authorization}`,
-                'Content-Type': 'application/json',
-            },
-            params: {
-                'currentDocument.exists': true,
-                'updateMask.fieldPaths': `time.${nextKey}`,
-            }
-        });
-
-        return response.data;
+        console.log('Document updated successfully:', updateResponse.data); 
+        return updateResponse.data;
     } catch (error) {
+        console.log(error)
         return handleError(error, 'Error in setTime', { userId, clockTime });
     }
 }
+
+
+
+
 
 async function getBreak(userId, headers) {
     try {
