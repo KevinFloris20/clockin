@@ -27,7 +27,7 @@ async function clockIn() {
         } else {
             errorUI(msgBox, date);
         }
-
+        showClockTimes();
         loadedUI(button);
     } catch (err) {
         const button = document.getElementById('clockInButton');
@@ -39,17 +39,37 @@ async function clockIn() {
 }
 async function getClockTimes() {
     try {
+        //show loading ui
+        const el = document.getElementById('clockInTimes')
+        loadingUI(el);
         const response = await fetch('/api/times');
         const res = await response.json();
         console.log(res); 
-        return res.data.fields
+        if (response.ok) {
+            loadedUI(el);
+            return res.data.fields;
+        }else{
+            loadedUI(el);
+            errorUI(el, res.message);
+        }
     } catch (err) {
         console.error(err);
     }
 }
+async function showClockTimes(){
+    const tbody = document.getElementById('clockInTimes');
+    tbody.innerHTML = '';
+
+    const userRes = getClockTimes();
+    userRes.then(data => {
+        const times = Object.values(data.time.arrayValue.values).map(time => {
+            return convertUTCToLocalTime(time.timestampValue);
+        });
+        populateClockTimeTable(times);
+    });
+}
 
 // helper functions
-
 function getCurrentUTCTime() {
     return new Date().toISOString();
 }
@@ -147,13 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     //get times and print to console
-    const userRes = getClockTimes();
-    userRes.then(data => {
-        const times = Object.values(data.time.mapValue.fields).map(time => {
-            return convertUTCToLocalTime(time.timestampValue);
-        });
-        populateClockTimeTable(times);
-    });
+    showClockTimes();
     
 
 

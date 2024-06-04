@@ -111,53 +111,88 @@ async function getTime(userId, headers) {
 
 
 
+// async function setTime(userId, clockTime, headers) {
+//     try {
+//         const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbName}/documents/${collectionId}/${userId}`;
+//         console.log('Fetching document from URL:', url); 
+//         const docResponse = await axios.get(url, { headers });
+//         const doc = docResponse.data;
+//         let currentTimes = {};
+
+//         if (doc.fields && doc.fields.time && doc.fields.time.mapValue && doc.fields.time.mapValue.fields) {
+//             currentTimes = doc.fields.time.mapValue.fields;
+//         }
+
+//         const nextKey = (Object.keys(currentTimes).length + 1).toString();
+//         console.log('Next key in sequence:', nextKey); 
+
+//         clockTime = formatFirestoreValue(new Date(clockTime))
+//         console.log("Clock " , clockTime)
+
+//         console.log("Other: ", projectId, dbName, collectionId, userId)
+//         const formattedData = {
+//             time: {
+//                 mapValue: {
+//                     fields: {
+//                         [nextKey]: clockTime
+//                     }
+//                 }
+//             }
+//         };
+//         console.log(formattedData)
+//         const fieldPaths = Object.keys(formattedData).join('&updateMask.fieldPaths=');
+//         const updateUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbName}/documents/${collectionId}/${userId}?updateMask.fieldPaths=${fieldPaths}`;
+//         const updatePayload = {
+//             fields: formattedData
+//         };
+//         const updateResponse = await axios.patch(updateUrl, updatePayload, { headers });
+
+//         console.log('Document updated successfully:', updateResponse.data); 
+//         return updateResponse.data;
+//     } catch (error) {
+//         console.log(error)
+//         return handleError(error, 'Error in setTime', { userId, clockTime });
+//     }
+// }// SetOptions(merge: true)
+
+
 async function setTime(userId, clockTime, headers) {
     try {
-        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbName}/documents/${collectionId}/${userId}`;
-        console.log('Fetching document from URL:', url); 
-        const docResponse = await axios.get(url, { headers });
-        const doc = docResponse.data;
-        let currentTimes = {};
+        const documentData = await getTime(userId, headers);
 
-        if (doc.fields && doc.fields.time && doc.fields.time.mapValue && doc.fields.time.mapValue.fields) {
-            currentTimes = doc.fields.time.mapValue.fields;
+        if (!documentData.fields){
+            console.log('Document does not exist:', userId);
+            return;
         }
 
-        const nextKey = (Object.keys(currentTimes).length + 1).toString();
-        console.log('Next key in sequence:', nextKey); 
+        const existingArray = documentData.fields.time.arrayValue.values || []; 
 
-        clockTime = formatFirestoreValue(new Date(clockTime))
-        console.log("Clock " , clockTime)
+        const formattedClockTime = formatFirestoreValue(new Date(clockTime));
+        const updatedArray = [...existingArray, formattedClockTime]; 
 
-        console.log("Other: ", projectId, dbName, collectionId, userId)
-        const formattedData = {
-            time: {
-                mapValue: {
-                    fields: {
-                        [nextKey]: clockTime
+        const updateData = {
+            fields: {
+                time: {
+                    arrayValue: {
+                        values: updatedArray
                     }
                 }
             }
         };
-        console.log(formattedData)
-        const fieldPaths = Object.keys(formattedData).join('&updateMask.fieldPaths=');
-        const updateUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbName}/documents/${collectionId}/${userId}?updateMask.fieldPaths=${fieldPaths}`;
-        const updatePayload = {
-            fields: formattedData
-        };
-        const updateResponse = await axios.patch(updateUrl, updatePayload, { headers });
 
-        console.log('Document updated successfully:', updateResponse.data); 
+        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbName}/documents/${collectionId}/${userId}`;
+        const fieldPaths = Object.keys(updateData.fields).join('&updateMask.fieldPaths=');
+        const updateUrl = `${url}?updateMask.fieldPaths=${fieldPaths}`;
+
+        const updateResponse = await axios.patch(updateUrl, updateData, { headers });
+
+        console.log('Document updated successfully:', updateResponse.data);
         return updateResponse.data;
-    } catch (error) {
-        console.log(error)
+    }catch (error) {
+        console.log(error);
         return handleError(error, 'Error in setTime', { userId, clockTime });
     }
-}
-
-
-
-
+  }
 
 async function getBreak(userId, headers) {
     try {
