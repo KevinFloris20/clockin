@@ -185,9 +185,12 @@ async function setTime(userId, clockTime, headers) {
         const updateUrl = `${url}?updateMask.fieldPaths=${fieldPaths}`;
 
         const updateResponse = await axios.patch(updateUrl, updateData, { headers });
-
-        console.log('Document updated successfully:', updateResponse.data);
-        return updateResponse.data;
+        let status = updateResponse.status;
+        let data = null;
+        if (status === 200) {
+            data = updateResponse.data;
+        }
+        return {status, data};
     }catch (error) {
         console.log(error);
         return handleError(error, 'Error in setTime', { userId, clockTime });

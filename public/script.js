@@ -66,7 +66,10 @@ async function showClockTimes(){
             return convertUTCToLocalTime(time.timestampValue);
         });
         populateClockTimeTable(times);
+        getClockStatus(times);
     });
+
+    
 }
 
 // helper functions
@@ -158,6 +161,24 @@ function populateClockTimeTable(times){
         tbody.appendChild(tr);
     });
 }
+function getClockStatus(clockData){
+    let clockStat;
+    let clockBtnEl = document.getElementById('clockInButton');
+    //remove display style from body
+    document.body.classList.remove('hidden');
+    if(clockData.length % 2 === 0){
+        clockStat = 'In';
+        clockBtnEl.classList.remove('yellow')
+        clockBtnEl.classList.add('teal');
+        clockBtnEl.innerText = 'Clock In';
+    }else{
+        clockStat = 'Out';
+        clockBtnEl.classList.remove('teal')
+        clockBtnEl.classList.add('yellow');
+        clockBtnEl.innerText = 'Clock Out';
+    }
+    return clockStat;
+}
 
 //set everything in dom
 document.addEventListener('DOMContentLoaded', () => {
@@ -169,6 +190,8 @@ document.addEventListener('DOMContentLoaded', () => {
     //get times and print to console
     showClockTimes();
     
+    //Find out if the clock is in or out
+
 
 
 

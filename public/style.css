@@ -1,4 +1,11 @@
-body {
+html{
     background-color: #f0f0f0;
 }
-  
+body {
+    /* display: none; */
+    background-color: #f0f0f0;
+}
+
+#msgCont{
+    margin-top: 20px;
+}
