@@ -23,7 +23,7 @@ async function clockIn() {
         let date = toMMDDYYYY(convertUTCToLocalTime(res.data));
 
         if (response.ok) {
-            addMessageUI(msgBox, res.message + ":  " + date);
+            addMessageUI(msgBox, "Clock: " + date);
         } else {
             errorUI(msgBox, date);
         }
@@ -171,14 +171,52 @@ function getClockStatus(clockData){
         clockBtnEl.classList.remove('yellow')
         clockBtnEl.classList.add('teal');
         clockBtnEl.innerText = 'Clock In';
+        startTimer();
     }else{
         clockStat = 'Out';
         clockBtnEl.classList.remove('teal')
         clockBtnEl.classList.add('yellow');
         clockBtnEl.innerText = 'Clock Out';
+        let val = clockData[clockData.length - 1];
+        startTimer(val.split(' ')[1], val.split(' ')[2], true);
     }
     return clockStat;
 }
+let timerInterval;
+function startTimer(clockInTimeInput, AMorPM, out) {
+    if (!out) {
+        clearInterval(timerInterval);
+        document.getElementById('elapsedTime').innerText = '00:00:00';
+        return;
+    }
+    if (timerInterval){
+        clearInterval(timerInterval);
+    }
+
+    const clockInTime = new Date();
+    let [hours, minutes, seconds] = clockInTimeInput.split(':').map(Number);
+
+    if (AMorPM === 'PM' && hours < 12) {
+        hours += 12;
+    } else if (AMorPM === 'AM' && hours === 12) {
+        hours = 0;
+    }
+
+    clockInTime.setHours(hours, minutes, seconds, 0);
+
+    timerInterval = setInterval(() => {
+        const now = new Date();
+        const elapsedMilliseconds = now - clockInTime;
+
+        const hoursElapsed = Math.floor(elapsedMilliseconds / (1000 * 60 * 60));
+        const minutesElapsed = Math.floor((elapsedMilliseconds % (1000 * 60 * 60)) / (1000 * 60));
+        const secondsElapsed = Math.floor((elapsedMilliseconds % (1000 * 60)) / 1000);
+
+        document.getElementById('elapsedTime').innerText = `${String(hoursElapsed).padStart(2, '0')}:${String(minutesElapsed).padStart(2, '0')}:${String(secondsElapsed).padStart(2, '0')}`;
+    }, 1000);
+}
+
+
 
 //set everything in dom
 document.addEventListener('DOMContentLoaded', () => {
@@ -190,8 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //get times and print to console
     showClockTimes();
     
-    //Find out if the clock is in or out
-
+    //
 
 
 
