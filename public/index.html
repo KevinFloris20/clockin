@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Clock-In App</title>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+        <link rel="stylesheet" href="/semantic.min.css"/>
         <link rel="stylesheet" href="/style.css">
     </head>
     <body class="hidden">
@@ -43,7 +43,22 @@
 
         <!-- container for the table of clock times -->
         <div class="ui container">
-            <h2 class="ui teal header">Clock-In Times</h2>
+            <div class="header-container">
+                <h2 class="ui teal header">Clock-In Times</h2>
+                <div id="dateFilterDropdown" class="ui selection dropdown">
+                    <input type="hidden" id="dateFilter">
+                    <i class="dropdown icon"></i>
+                    <div class="text">Today</div>
+                    <div class="menu">
+                        <div class="item" data-value="today">Today</div>
+                        <div class="item" data-value="24hrs">24 hr</div>
+                        <div class="item" data-value="7days">7 days</div>
+                        <div class="item" data-value="1month">1 month</div>
+                        <div class="item" data-value="6months">6 months</div>
+                        <div class="item" data-value="all">All</div>
+                    </div>
+                </div>
+            </div>
             <table class="ui celled table">
                 <thead>
                     <tr>
@@ -54,7 +69,11 @@
                 <tbody id="clockInTimes">
                 </tbody>
             </table>
+            <br>
+            <br>
         </div>
+        <script src="/jquery-3.7.1.min.js"></script>
+        <script src="/semantic.min.js"></script>
         <script src="/script.js"></script>
     </body>
 </html>

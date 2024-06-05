@@ -57,19 +57,18 @@ async function getClockTimes() {
     }
 }
 async function showClockTimes(){
-    const tbody = document.getElementById('clockInTimes');
-    tbody.innerHTML = '';
-
     const userRes = getClockTimes();
-    userRes.then(data => {
-        const times = Object.values(data.time.arrayValue.values).map(time => {
+    let times;
+    return userRes.then(data => {
+        times = Object.values(data.time.arrayValue.values).map(time => {
             return convertUTCToLocalTime(time.timestampValue);
         });
         populateClockTimeTable(times);
         getClockStatus(times);
+        let x = document.getElementById('dateFilter').value || '24hrs';
+        filterDates(x , times);
+        return times;
     });
-
-    
 }
 
 // helper functions
@@ -148,6 +147,7 @@ function clearMessageUI(el){
 }
 function populateClockTimeTable(times){
     const tbody = document.getElementById('clockInTimes');
+    tbody.innerHTML = '';
     times.forEach((time, index) => {
         const tr = document.createElement('tr');
         const countTd = document.createElement('td');
@@ -215,20 +215,70 @@ function startTimer(clockInTimeInput, AMorPM, out) {
         document.getElementById('elapsedTime').innerText = `${String(hoursElapsed).padStart(2, '0')}:${String(minutesElapsed).padStart(2, '0')}:${String(secondsElapsed).padStart(2, '0')}`;
     }, 1000);
 }
+function filterDates(filter, times) {
+    const now = new Date();
+    let filteredTimes;
+
+    switch (filter) {
+        case 'today':
+            filteredTimes = times.filter(time => {
+                const date = new Date(time);
+                return date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+            });
+            break;
+        case '24hrs':
+            filteredTimes = times.filter(time => {
+                const date = new Date(time);
+                return (now - date) <= 24 * 60 * 60 * 1000;
+            });
+            break;
+        case '7days':
+            filteredTimes = times.filter(time => {
+                const date = new Date(time);
+                return (now - date) <= 7 * 24 * 60 * 60 * 1000;
+            });
+            break;
+        case '1month':
+            filteredTimes = times.filter(time => {
+                const date = new Date(time);
+                return (now - date) <= 30 * 24 * 60 * 60 * 1000;
+            });
+            break;
+        case '6months':
+            filteredTimes = times.filter(time => {
+                const date = new Date(time);
+                return (now - date) <= 6 * 30 * 24 * 60 * 60 * 1000;
+            });
+            break;
+        case 'all':
+        default:
+            filteredTimes = times;
+            break;
+    }
+    populateClockTimeTable(filteredTimes)
+    return filteredTimes;
+}
+
 
 
 
 //set everything in dom
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('clockInButton').addEventListener('click', (event) => {
         event.preventDefault();
         clockIn();
     });
 
     //get times and print to console
-    showClockTimes();
-    
-    //
+    let times = await showClockTimes();
+
+    //initialize dropdown
+    $('.ui.dropdown').dropdown({
+        onChange: function(value) {
+            filterDates(value, times);
+        }
+    });
+
 
 
 
