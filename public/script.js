@@ -160,6 +160,8 @@ function populateClockTimeTable(times){
         tr.appendChild(timeTd);
         tbody.appendChild(tr);
     });
+
+    calculateTotalHours(times);
 }
 function getClockStatus(clockData){
     let clockStat;
@@ -258,11 +260,71 @@ function filterDates(filter, times) {
     populateClockTimeTable(filteredTimes)
     return filteredTimes;
 }
+function calculateTotalHours(times) {
+    let totalMilliseconds = 0;
+
+    for (let i = 0; i < times.length; i += 2) {
+        const clockInTime = new Date(times[i]);
+        const clockOutTime = new Date(times[i + 1]);
+
+        if (!isNaN(clockInTime) && !isNaN(clockOutTime)) {
+            totalMilliseconds += clockOutTime - clockInTime;
+        }
+    }
+
+    const totalSeconds = Math.floor(totalMilliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    document.getElementById('totalHours').innerText = `Hours: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+// function calculateTotalHours(times) {
+//     console.log(times);
+//     let totalMilliseconds = 0;
+
+//     for (let i = 0; i < times.length; i += 2) {
+//         const clockInTime = new Date(times[i]);
+//         const clockOutTime = new Date(times[i + 1]);
+
+//         if (!isNaN(clockInTime) && !isNaN(clockOutTime)) {
+//             totalMilliseconds += clockOutTime - clockInTime;
+//         }
+//     }
+
+//     const totalSeconds = Math.floor(totalMilliseconds / 1000);
+//     const hours = Math.floor(totalSeconds / 3600);
+//     const minutes = Math.floor((totalSeconds % 3600) / 60);
+//     const seconds = totalSeconds % 60;
+
+//     //add a set interval elapsed time thats in the element id elapsedTime, to the total time
+//     setInterval(() => {
+//         let elapsed = document.getElementById('elapsedTime').innerText;
+//         let [elapsedHours, elapsedMinutes, elapsedSeconds] = elapsed.split(':').map(Number);
+//         elapsedHours += hours;
+//         elapsedMinutes += minutes;
+//         elapsedSeconds += seconds;
+//         if (elapsedSeconds >= 60) {
+//             elapsedMinutes++;
+//             elapsedSeconds -= 60;
+//         }
+//         if (elapsedMinutes >= 60) {
+//             elapsedHours++;
+//             elapsedMinutes -= 60;
+//         }
+//         document.getElementById('totalHours').innerText = `Hours: ${String(elapsedHours).padStart(2, '0')}:${String(elapsedMinutes).padStart(2, '0')}:${String(elapsedSeconds).padStart(2, '0')}`;
+//     }, 1000);
 
 
+
+//     // document.getElementById('totalHours').innerText = `Hours: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+// }
 
 
 //set everything in dom
+
+
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('clockInButton').addEventListener('click', (event) => {
         event.preventDefault();
