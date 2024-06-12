@@ -65,7 +65,7 @@ async function showClockTimes(){
         });
         populateClockTimeTable(times);
         getClockStatus(times);
-        let x = document.getElementById('dateFilter').value || '24hrs';
+        let x = document.getElementById('dateFilter').value || 'today';
         filterDates(x , times);
         return times;
     });
@@ -213,7 +213,6 @@ function populateClockTimeTable(times) {
 
     calculateTotalHours(times);
 }
-
 let clockStatt;
 function getClockStatus(clockData){
     let clockStat;
