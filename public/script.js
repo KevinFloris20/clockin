@@ -145,24 +145,76 @@ function clearMessageUI(el){
     el.classList.remove('green');
     el.innerText = '';
 }
-function populateClockTimeTable(times){
+// function populateClockTimeTable(times){
+//     const tbody = document.getElementById('clockInTimes');
+//     tbody.innerHTML = '';
+//     times.forEach((time, index) => {
+//         const tr = document.createElement('tr');
+//         const countTd = document.createElement('td');
+//         const timeTd = document.createElement('td');
+
+//         if(Math.floor(index / 2) % 2 !== 0) {
+//             tr.classList.add('grey-background');
+//         }
+        
+//         countTd.textContent = index + 1;
+//         timeTd.textContent = time;
+
+//         tr.appendChild(countTd);
+//         tr.appendChild(timeTd);
+//         tbody.appendChild(tr);
+//     });
+
+//     calculateTotalHours(times);
+// }
+function populateClockTimeTable(times) {
     const tbody = document.getElementById('clockInTimes');
     tbody.innerHTML = '';
-    times.forEach((time, index) => {
-        const tr = document.createElement('tr');
-        const countTd = document.createElement('td');
-        const timeTd = document.createElement('td');
+    
+    for (let i = 0; i < times.length; i += 2) {
+        const start = new Date(times[i]);
+        const end = i + 1 < times.length ? new Date(times[i + 1]) : null;
         
-        countTd.textContent = index + 1;
-        timeTd.textContent = time;
+        const tr1 = document.createElement('tr');
+        const tr2 = document.createElement('tr');
+        const countTd1 = document.createElement('td');
+        const countTd2 = document.createElement('td');
+        const timeTd1 = document.createElement('td');
+        const timeTd2 = document.createElement('td');
+        
+        if (Math.floor(i / 2) % 2 !== 0) {
+            tr1.classList.add('grey-background');
+            tr2.classList.add('grey-background');
+        }
 
-        tr.appendChild(countTd);
-        tr.appendChild(timeTd);
-        tbody.appendChild(tr);
-    });
+        countTd1.textContent = i + 1;
+        timeTd1.textContent = times[i];
+        
+        if (end) {
+            countTd2.textContent = i + 2;
+            const diff = end - start;
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            const totalHours = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timeTd2.innerHTML = `${times[i + 1]}<br><strong>Hours: ${totalHours}</strong>`;
+        } else {
+            countTd2.textContent = i + 2;
+            timeTd2.textContent = '---';
+        }
+        
+        tr1.appendChild(countTd1);
+        tr1.appendChild(timeTd1);
+        tr2.appendChild(countTd2);
+        tr2.appendChild(timeTd2);
+        tbody.appendChild(tr1);
+        tbody.appendChild(tr2);
+    }
 
     calculateTotalHours(times);
 }
+
+let clockStatt;
 function getClockStatus(clockData){
     let clockStat;
     let clockBtnEl = document.getElementById('clockInButton');
@@ -182,6 +234,7 @@ function getClockStatus(clockData){
         let val = clockData[clockData.length - 1];
         startTimer(val.split(' ')[1], val.split(' ')[2], true);
     }
+    clockStatt = clockStat;
     return clockStat;
 }
 let timerInterval;
@@ -257,6 +310,16 @@ function filterDates(filter, times) {
             filteredTimes = times;
             break;
     }
+
+    //if the filtered times is an odd number and the mode isnt clock out, then add one more time from the end
+    if (clockStatt === "In" && (filteredTimes.length % 2 !== 0)) {
+        const firstFilteredIndex = times.indexOf(filteredTimes[0]);
+        if (firstFilteredIndex > 0) {
+            const lastUnfilteredTime = times[firstFilteredIndex - 1];
+            filteredTimes.unshift(lastUnfilteredTime);
+        }
+    }
+
     populateClockTimeTable(filteredTimes)
     return filteredTimes;
 }

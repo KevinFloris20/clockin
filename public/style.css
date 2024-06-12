@@ -14,3 +14,6 @@ body {
     align-items: center;
     justify-content: space-between;
 }
+.grey-background{
+    background-color: rgb(242, 242, 242);
+}
