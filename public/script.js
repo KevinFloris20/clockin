@@ -56,6 +56,7 @@ async function getClockTimes() {
         console.error(err);
     }
 }
+let clock_times;
 async function showClockTimes(){
     const userRes = getClockTimes();
     let times;
@@ -67,6 +68,7 @@ async function showClockTimes(){
         getClockStatus(times);
         let x = document.getElementById('dateFilter').value || 'today';
         filterDates(x , times);
+        clock_times = times;
         return times;
     });
 }
@@ -394,12 +396,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     //get times and print to console
-    let times = await showClockTimes();
+    await showClockTimes();
 
     //initialize dropdown
     $('.ui.dropdown').dropdown({
         onChange: function(value) {
-            filterDates(value, times);
+            filterDates(value, clock_times);
         }
     });
 
