@@ -313,7 +313,7 @@ function filterDates(filter, times) {
     }
 
     //if the filtered times is an odd number and the mode isnt clock out, then add one more time from the end
-    if (clockStatt === "In" && (filteredTimes.length % 2 !== 0)) {
+    if (clockStatt !== "In" && (filteredTimes.length % 2 !== 0)) {
         const firstFilteredIndex = times.indexOf(filteredTimes[0]);
         if (firstFilteredIndex > 0) {
             const lastUnfilteredTime = times[firstFilteredIndex - 1];
