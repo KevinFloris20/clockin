@@ -10,7 +10,7 @@ async function clockIn() {
         clearErrorUI(msgBox);
         clearMessageUI(msgBox);
 
-        const response = await fetch('/api/clockin', {
+        const response = await fetch('/clockin', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ async function getClockTimes() {
         //show loading ui
         const el = document.getElementById('clockInTimes')
         loadingUI(el);
-        const response = await fetch('/api/times');
+        const response = await fetch('/times');
         const res = await response.json();
         console.log(res); 
         if (response.ok) {
