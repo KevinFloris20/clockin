@@ -62,14 +62,32 @@ async function showClockTimes(){
     let times;
     return userRes.then(data => {
         times = Object.values(data.time.arrayValue.values).map(time => {
-            return convertUTCToLocalTime(time.timestampValue);
+            return new Date(time.timestampValue);
+            // return convertUTCToLocalTime(time.timestampValue);
         });
-        populateClockTimeTable(times);
-        getClockStatus(times);
+
+        //convert the times to an object with the periods, the times, time count, period count, and calc the total elapsed time in HH:MM:SS format, and a boolean if the period is complete or not
+        let timeObj = times.map((time, index) => {
+            let elapsedMS = index % 2 === 1 ? time - times[index - 1] : null;
+            let elapsedHHMMSS = elapsedMS ? `${String(Math.floor(elapsedMS / 3600000)).padStart(2, '0')}:${String(Math.floor((elapsedMS % 3600000) / 60000)).padStart(2, '0')}:${String(Math.floor((elapsedMS % 60000) / 1000)).padStart(2, '0')}` : null;
+            return {
+                time: convertUTCToLocalTime(time),
+                period: Math.floor(index / 2) + 1,
+                count: index,
+                timeElapsed: elapsedHHMMSS,
+                endOfperiod: index % 2 === 1,
+            };
+        });
+        console.log(timeObj);
+
+
+
+        populateClockTimeTable(timeObj);
+        getClockStatus(timeObj);
         let x = document.getElementById('dateFilter').value || 'today';
-        filterDates(x , times);
-        clock_times = times;
-        return times;
+        filterDates(x , timeObj);
+        clock_times = timeObj;
+        return timeObj;
     });
 }
 
@@ -173,48 +191,61 @@ function populateClockTimeTable(times) {
     const tbody = document.getElementById('clockInTimes');
     tbody.innerHTML = '';
     
-    for (let i = 0; i < times.length; i += 2) {
-        const start = new Date(times[i]);
-        const end = i + 1 < times.length ? new Date(times[i + 1]) : null;
+    for (let i = 0; i < times.length; i++) {
+        const t = times[i].time;
+        // const end = times[i].endOfperiod ? times[i + 1].time : times[i].endOfperiod;
         
         const tr1 = document.createElement('tr');
-        const tr2 = document.createElement('tr');
+        // const tr2 = document.createElement('tr');
         const countTd1 = document.createElement('td');
-        const countTd2 = document.createElement('td');
+        // const countTd2 = document.createElement('td');
         const timeTd1 = document.createElement('td');
-        const timeTd2 = document.createElement('td');
+        // const timeTd2 = document.createElement('td');
         
-        if (Math.floor(i / 2) % 2 !== 0) {
+        // if (Math.floor(i / 2) % 2 !== 0) {
+        //     tr1.classList.add('grey-background');
+        // }
+        if(times[i].period % 2 !== 0){
             tr1.classList.add('grey-background');
-            tr2.classList.add('grey-background');
         }
 
         countTd1.textContent = i + 1;
-        timeTd1.textContent = times[i];
+        timeTd1.textContent = t;
         
-        if (end) {
-            countTd2.textContent = i + 2;
-            const diff = end - start;
-            const hours = Math.floor(diff / 3600000);
-            const minutes = Math.floor((diff % 3600000) / 60000);
-            const seconds = Math.floor((diff % 60000) / 1000);
-            const totalHours = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            timeTd2.innerHTML = `${times[i + 1]}<br><strong>Hours: ${totalHours}</strong>`;
-        } else {
-            countTd2.textContent = i + 2;
-            timeTd2.textContent = '---';
-        }
+        if (times[i].endOfperiod) {
+            // countTd2.textContent = i + 2;
+            // const diff = 
+            // const hours = Math.floor(diff / 3600000);
+            // const minutes = Math.floor((diff % 3600000) / 60000);
+            // const seconds = Math.floor((diff % 60000) / 1000);
+            // const totalHours = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timeTd1.innerHTML = `${t}<br><strong>Hours: ${times[i].timeElapsed}</strong>`;
+        } 
+        // else if(clockStatt === 'Out'){
+        //     countTd1.textContent = i;
+        //     timeTd1.textContent = '---';
+        // }
         
         tr1.appendChild(countTd1);
         tr1.appendChild(timeTd1);
-        tr2.appendChild(countTd2);
-        tr2.appendChild(timeTd2);
+        // tr2.appendChild(countTd2);
+        // tr2.appendChild(timeTd2);
         tbody.appendChild(tr1);
-        tbody.appendChild(tr2);
+        if(clockStatt === 'Out' && !times[i].endOfperiod && i === times.length - 1){
+            const tr2 = document.createElement('tr');
+            const countTd2 = document.createElement('td');
+            const timeTd2 = document.createElement('td');
+            countTd2.textContent = i + 2;
+            timeTd2.textContent = '---';
+            tr2.appendChild(countTd2);
+            tr2.appendChild(timeTd2);
+            tbody.appendChild(tr2);
+        }
     }
 
     calculateTotalHours(times);
 }
+// if clockStatt is in then the clock mode is even, if out then the clock mode is odd
 let clockStatt;
 function getClockStatus(clockData){
     let clockStat;
@@ -232,7 +263,7 @@ function getClockStatus(clockData){
         clockBtnEl.classList.remove('teal')
         clockBtnEl.classList.add('yellow');
         clockBtnEl.innerText = 'Clock Out';
-        let val = clockData[clockData.length - 1];
+        let val = clockData[clockData.length - 1].time;
         startTimer(val.split(' ')[1], val.split(' ')[2], true);
     }
     clockStatt = clockStat;
@@ -278,31 +309,31 @@ function filterDates(filter, times) {
     switch (filter) {
         case 'today':
             filteredTimes = times.filter(time => {
-                const date = new Date(time);
+                const date = new Date(time.time);
                 return date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
             });
             break;
         case '24hrs':
             filteredTimes = times.filter(time => {
-                const date = new Date(time);
+                const date = new Date(time.time);
                 return (now - date) <= 24 * 60 * 60 * 1000;
             });
             break;
         case '7days':
             filteredTimes = times.filter(time => {
-                const date = new Date(time);
+                const date = new Date(time.time);
                 return (now - date) <= 7 * 24 * 60 * 60 * 1000;
             });
             break;
         case '1month':
             filteredTimes = times.filter(time => {
-                const date = new Date(time);
+                const date = new Date(time.time);
                 return (now - date) <= 30 * 24 * 60 * 60 * 1000;
             });
             break;
         case '6months':
             filteredTimes = times.filter(time => {
-                const date = new Date(time);
+                const date = new Date(time.time);
                 return (now - date) <= 6 * 30 * 24 * 60 * 60 * 1000;
             });
             break;
@@ -313,7 +344,7 @@ function filterDates(filter, times) {
     }
 
     //if the filtered times is an odd number and the mode isnt clock out, then add one more time from the end
-    if (clockStatt !== "In" && (filteredTimes.length % 2 !== 0)) {
+    if (clockStatt !== "Out" && (filteredTimes.length % 2 !== 0)) {
         const firstFilteredIndex = times.indexOf(filteredTimes[0]);
         if (firstFilteredIndex > 0) {
             const lastUnfilteredTime = times[firstFilteredIndex - 1];
@@ -325,21 +356,59 @@ function filterDates(filter, times) {
     return filteredTimes;
 }
 function calculateTotalHours(times) {
-    let totalMilliseconds = 0;
-
-    for (let i = 0; i < times.length; i += 2) {
-        const clockInTime = new Date(times[i]);
-        const clockOutTime = new Date(times[i + 1]);
-
-        if (!isNaN(clockInTime) && !isNaN(clockOutTime)) {
-            totalMilliseconds += clockOutTime - clockInTime;
+    // let totalMilliseconds = 0;
+    let hours = 0;
+    let minutes = 0;
+    let seconds = 0;
+    for(let i = 0; i < times.length; i++){
+        // hours += Math.floor((new Date(times[i + 1].time) - new Date(times[i].time)) / 3600000);
+        // minutes += Math.floor(((new Date(times[i + 1].time) - new Date(times[i].time)) % 3600000) / 60000);
+        // seconds += Math.floor(((new Date(times[i + 1].time) - new Date(times[i].time)) % 60000) / 1000);
+        // if (seconds >= 60) {
+        //     minutes++;
+        //     seconds -= 60;
+        // }
+        // if (minutes >= 60) {
+        //     hours++;
+        //     minutes -= 60;
+        // }
+        if(times[i].endOfperiod){
+            let [h, m, s] = times[i].timeElapsed.split(':').map(Number);
+            hours += h;
+            minutes += m;
+            seconds += s;
         }
-    }
+        if (seconds >= 60) {
+            minutes++;
+            seconds -= 60;
+        }
+        if (minutes >= 60) {
+            hours++;
+            minutes -= 60;
+        }
 
-    const totalSeconds = Math.floor(totalMilliseconds / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+        //if last time is clock in then add the elapsed time to the total time
+        // if(i === times.length - 1 && !times[i].endOfperiod && clockStatt === 'Out'){
+        //     let now = new Date();
+        //     let [h, m, s] = times[i].timeElapsed.split(':').map(Number);
+        // }
+    }
+    console.log(hours, minutes, seconds);
+
+
+    // for (let i = 0; i < times.length; i += 2) {
+    //     const clockInTime = new Date(times[i]);
+    //     const clockOutTime = new Date(times[i + 1]);
+
+    //     if (!isNaN(clockInTime) && !isNaN(clockOutTime)) {
+    //         totalMilliseconds += clockOutTime - clockInTime;
+    //     }
+    // }
+
+    // const totalSeconds = Math.floor(totalMilliseconds / 1000);
+    // const hours = Math.floor(totalSeconds / 3600);
+    // const minutes = Math.floor((totalSeconds % 3600) / 60);
+    // const seconds = totalSeconds % 60;
 
     document.getElementById('totalHours').innerText = `Hours: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
@@ -404,8 +473,5 @@ document.addEventListener('DOMContentLoaded', async () => {
             filterDates(value, clock_times);
         }
     });
-
-
-
 
 });
