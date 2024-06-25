@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const route = require('./server/routes.js');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3009;
 
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -16,11 +16,6 @@ app.get('/public/other/site.webmanifest', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'other', 'site.webmanifest'));
 });
 app.use('/', route);
-
-
-
-
-
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

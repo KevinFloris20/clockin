@@ -205,8 +205,10 @@ function populateClockTimeTable(times) {
         // if (Math.floor(i / 2) % 2 !== 0) {
         //     tr1.classList.add('grey-background');
         // }
+        let whiteOrGrey = false; //white is false grey is false
         if(times[i].period % 2 !== 0){
             tr1.classList.add('grey-background');
+            whiteOrGrey = true;
         }
 
         countTd1.textContent = i + 1;
@@ -237,6 +239,7 @@ function populateClockTimeTable(times) {
             const timeTd2 = document.createElement('td');
             countTd2.textContent = i + 2;
             timeTd2.textContent = '---';
+            if (whiteOrGrey) tr2.classList.add('grey-background');
             tr2.appendChild(countTd2);
             tr2.appendChild(timeTd2);
             tbody.appendChild(tr2);
