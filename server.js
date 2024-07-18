@@ -11,12 +11,15 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public/other')))
-app.get('/public/other/site.webmanifest', (req, res) => {
+
+app.use('/', route);
+app.get('/', (req, res) => {
     res.type('application/manifest+json');
     res.sendFile(path.join(__dirname, '..', 'public', 'other', 'site.webmanifest'));
 });
-app.use('/', route);
-
+app.get('/favicon.ico', (req, res) =>
+    res.sendFile(path.join(__dirname, '..', 'public', 'other', 'public/favicon.ico'))
+);
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

@@ -43,12 +43,6 @@ router.post('/break', handleBreak);
 const { handleGetTime } = require('./handlers/getTimeHandler.js');
 router.get('/times', handleGetTime);
 
-//serve site.webmanifest and favicon
-router.get('/site.webmanifest', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public/site.webmanifest'));
-});
-router.get('/favicon.ico', (req, res) =>
-    res.sendFile(path.join(__dirname, '..', 'public/favicon.ico'))
-);
+
 
 module.exports = router;
